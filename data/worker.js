@@ -23,21 +23,36 @@
   // Wait for DOM ready if jQuery's present on the page.
   $(function() {
     if ( unsafe.R && unsafe.R.player ) {
-      console.log("[worker] Found player.");
       player = unsafe.R.player;
-      self.port.emit("ready");
+      self.port.emit('ready');
     } else {
-      console.log("[worker] Found no player.");
-      self.port.emit("noplayer");
+      self.port.emit('noplayer');
       player = null;
     }
   });
 
-  self.port.on("playPause", function () {
+  self.port.on('playPause', function () {
     if ( null !== player ) {
       player.playPause();
     } else {
-      console.log("Cannot playPause, player is not available.");
+      console.log('Cannot playPause, player is not available.');
+    }
+  });
+
+  self.port.on('volume:get', function () {
+    if ( null !== player ) {
+      self.port.emit('volume:got', player.volume());
+    } else {
+      console.log("Cannot update volume, player is not available.");
+    }
+  });
+
+  self.port.on('volume:update', function (value) {
+    if ( null !== player ) {
+      player.volume(value);
+      self.port.emit('volume:set', player.volume());
+    } else {
+      console.log("Cannot update volume, player is not available.");
     }
   });
 })(window, unsafeWindow);
