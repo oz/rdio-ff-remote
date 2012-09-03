@@ -1,0 +1,9 @@
+{
+    "name": "rdio-ff-remote", 
+    "license": "MPL 2.0", 
+    "author": "", 
+    "version": "0.1", 
+    "fullName": "Firefox remote for Rdio", 
+    "id": "net.cyprio.audio.rdio", 
+    "description": "An HTTP remote for Rdio"
+}
