@@ -17,10 +17,8 @@
   var $      = unsafe.jQuery;
   var player = null;          // Rdio's player object.
 
-  if ( !$ ) { // not even jQuery...
-    console.log("[worker] Not even jQuery...");
-    return self.port.emit("noplayer");
-  }
+  // not even jQuery...
+  if ( !$ ) { return self.port.emit("noplayer"); }
 
   // Wait for DOM ready if jQuery's present on the page.
   $(function() {
