@@ -4,34 +4,33 @@
  * FIXME(s)
  * --------
  *
- * Note that this uses unsafeWindow to check for some globals hopefully defined
- * by Rdio's Javascript.  The worker being loaded only on rdio.com domains helps.
- *
- * The "transparent" window proxy does not allow access to Rdio's JS, making
- * it a little useless in this case... Suggestions?
+ * Note that this uses unsafeWindow to check for some globals normally
+ * defined by Rdio's Javascript. The safer "transparent" window proxy
+ * does not allow access to Rdio's JS, making it a little useless in
+ * this case... Suggestions?
  *
  * Also, encapsulate stuff.
  *
  */
 (function (window, unsafe) {
-  var $      = unsafe.jQuery;
-  var player = null;          // Rdio's player object.
-
-  // not even jQuery...
-  if ( !$ ) { return self.port.emit("noplayer"); }
+  var $      = unsafe.jQuery,
+      port   = self.port,
+      player = null           // Rdio's player object.
+      ;
 
   // Wait for DOM ready if jQuery's present on the page.
+  if ( !$ ) { return self.port.emit("noplayer"); }
   $(function() {
     if ( unsafe.R && unsafe.R.player ) {
       player = unsafe.R.player;
-      self.port.emit('ready');
+      port.emit('ready');
     } else {
-      self.port.emit('noplayer');
+      port.emit('noplayer');
       player = null;
     }
   });
 
-  self.port.on('playPause', function () {
+  port.on('playPause', function () {
     if ( null !== player ) {
       player.playPause();
     } else {
@@ -39,18 +38,23 @@
     }
   });
 
-  self.port.on('volume:get', function () {
+  port.on('volume:get', function () {
+    var volume;
+
     if ( null !== player ) {
-      self.port.emit('volume:got', player.volume());
+      // Reduce float precision (hey, it's Javascript... :p)
+      volume = parseInt(player.volume() * 100, 10) / 100;
+      port.emit('volume:got', volume);
     } else {
-      console.log("Cannot update volume, player is not available.");
+      console.log("Cannot get volume, player is not available.");
     }
   });
 
-  self.port.on('volume:update', function (value) {
+  port.on('volume:update', function (value) {
     if ( null !== player ) {
+      // XXX User Rdio's pubsub object to get the new value?
       player.volume(value);
-      self.port.emit('volume:set', player.volume());
+      port.emit('volume:set', value);
     } else {
       console.log("Cannot update volume, player is not available.");
     }
